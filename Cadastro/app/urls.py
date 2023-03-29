@@ -1,7 +1,10 @@
 from django.urls import path
-from app.views import CadastroListAndCreate, Cadastro_detail_change_delete
+from app.views import cadastro_list, cadastro_detail_change_delete
+
 
 urlpatterns = [
-    path('', CadastroListAndCreate.as_view()),
-    path('<int:pk>/', Cadastro_detail_change_delete.as_view()),
+    path('', cadastro_list),
+    path('<int:pk>/', cadastro_detail_change_delete)
+    
 ]
+

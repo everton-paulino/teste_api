@@ -4,8 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from app.models import Cadastro
 from app.serializers import CadastroSerializer
-from rest_framework.views import APIView
-from rest_framework.exceptions import NotFound
+from django.shortcuts import render
 
 
 @api_view(['GET', 'POST'])
@@ -13,34 +12,33 @@ def cadastro_list(request):
     if request.method=='GET':
         cadastro = Cadastro.objects.all()
         serializer = CadastroSerializer(cadastro, many=True)
-        return Response(serializer.data)
-
-
-
-# @api_view(['GET', 'POST'])
-# def cadastro_list(request):
-#     if request.method=='GET':
-#         cadastro = Cadastro.objects.all()
-#         serializer = CadastroSerializer(cadastro, many=True)
-#         return Response(serializer.data)
+        return Response(serializer.data)    
+    elif request.method=='POST':
+        serializer = CadastroSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-#     elif request.method=='POST':
-#         try:
-#             data = request.data
-#             name = data['name']
-#             cpf = data.get('cpf','000.000.000/00')
-#             cadastro = Cadastro(name=name , cpf=cpf)
-#             save_return = cadastro.save()
-#             print('save all people',save_return)
-#             return Response(data)
-#         except Exception as e:
-#             response = Response()
-#             response.status_code = 500
-#             response_content_dict = {'message': 'Internal Server Error - Everton'}             
-#             response.content = response_content_dict
-#             return response
-#     else:
-#         response = Response()
-#         response.status_code = 500
-#         response.content = 'Internal Server Error'
-#         return response
+@api_view(['GET', 'PUT', 'DELETE'])
+def cadastro_detail_change_delete(request, pk):
+    try:
+        cadastro = Cadastro.objects.get(pk=pk)
+    except Cadastro.DoesNotExist:
+        return Response(status=status.HTTP_400_BAD_REQUEST)   
+
+    if request.method =='GET':
+        serializer = CadastroSerializer(cadastro)
+        return Response(serializer.data)
+    elif request.method =='PUT':
+        serializer = CadastroSerializer(cadastro, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        cadastro.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+def index(request):
+    return render(request, 'index.html')   
+
